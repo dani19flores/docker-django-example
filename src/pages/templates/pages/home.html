@@ -15,4 +15,15 @@
       <a class="border-b border-gray-900 mb-1" href="https://diveintodocker.com?ref=docker-django-example">https://diveintodocker.com</a>
     </strong>
   </p>
+  <div class="text-center mt-10">
+    <h1>{{ nombre }}</h1>
+    
+    {% if grafico_listo %}
+      <h3>Gráfico Generado desde la Clase Python:</h3>
+      <img src="{% static 'images/grafico.png' %}" alt="Gráfico de Análisis" style="max-width: 80%; border: 2px solid #ddd;">
+    {% else %}
+      <p style="color: red;">Error: No se pudo cargar el CSV o generar el gráfico.</p>
+    {% endif %}
+  </div>
+  
 {% endblock %}
