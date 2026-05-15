@@ -1,7 +1,7 @@
 {% extends "layouts/index.html" %}
 {% load static %}
 
-{% block title %}Docker + Django{% endblock %}
+{% block title %}Docker + Django | Análisis Demográfico{% endblock %}
 
 {% block body %}
   <div class="flex justify-center pt-24 pb-12 px-2 sm:px-0">
@@ -9,21 +9,45 @@
          width="480" height="167" alt="Django logo" />
   </div>
 
-  <p class="text-center text-lg mt-6">
-   🐳 Learn the Docker fundamentals at:
-    <strong>
-      <a class="border-b border-gray-900 mb-1" href="https://diveintodocker.com?ref=docker-django-example">https://diveintodocker.com</a>
-    </strong>
-  </p>
-  <div class="text-center mt-10">
-    <h1>{{ nombre }}</h1>
+  <div class="text-center mt-10 px-4">
+    <h1 class="text-4xl font-extrabold text-gray-900 mb-4">{{ nombre }}</h1>
     
+    <p class="text-lg text-gray-600 mb-10">
+      Visualización de datos demográficos procesados desde CSV (Año 2020).
+    </p>
+
     {% if grafico_listo %}
-      <h3>Gráfico Generado desde la Clase Python:</h3>
-      <img src="{% static 'images/grafico.png' %}" alt="Gráfico de Análisis" style="max-width: 80%; border: 2px solid #ddd;">
+      <div class="flex flex-col items-center gap-y-12 mb-20">
+        
+        <div class="w-full max-w-2xl bg-white p-6 rounded-xl shadow-md border border-gray-100">
+          <h2 class="text-xl font-semibold mb-4 text-gray-700">Mortalidad Infantil vs Esperanza de Vida</h2>
+          <img src="{% static 'images/grafico_dispersion.png' %}"
+                alt="Gráfico de Dispersión"
+                class="w-full h-auto rounded-lg">
+        </div>
+        
+        <div class="w-full max-w-lg bg-white p-6 rounded-xl shadow-md border border-gray-100">
+          <h2 class="text-xl font-semibold mb-4 text-gray-700">Matriz de Correlación de Indicadores</h2>
+          <img src="{% static 'images/grafico_correlacion.png' %}"
+                alt="Mapa de Calor de Correlación"
+                class="w-full h-auto rounded-lg">
+        </div>
+
+      </div>
     {% else %}
-      <p style="color: red;">Error: No se pudo cargar el CSV o generar el gráfico.</p>
+      <div class="max-w-2xl mx-auto bg-red-50 border-l-4 border-red-500 p-6 my-10">
+        <div class="flex items-center">
+          <div class="text-red-700">
+            <p class="font-bold text-lg">Error de Procesamiento</p>
+            <p>No se encontraron datos válidos o el archivo CSV no pudo ser procesado.</p>
+            <p class="text-sm mt-2 italic">Revisa los logs de Docker para ver el debug de las 7 columnas.</p>
+          </div>
+        </div>
+      </div>
     {% endif %}
   </div>
-  
+
+  <footer class="text-center pb-12 text-gray-400 text-sm">
+    <p>Proyecto de Fundamentos de Linux y Django • 2026</p>
+  </footer>
 {% endblock %}
