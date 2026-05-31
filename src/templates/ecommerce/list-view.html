@@ -1,0 +1,10 @@
+<h1>
+    Vista de Listado
+</h1>
+
+{% for product in products %}
+    <div class="product">
+        <h2>{{ product.title }}</h2>
+        <p>Precio: ${{ product.price }}</p>
+    </div>
+{% endfor %}
