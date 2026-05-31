@@ -1,3 +1,5 @@
+{% include "ecommerce/messages.html" %}
+
 <h1>
     Vista de Listado
 </h1>
@@ -6,5 +8,6 @@
     <div class="product">
         <h2>{{ product.title }}</h2>
         <p>Precio: ${{ product.price }}</p>
+        <a href="{% url 'detail' product.id %}">Ver Detalles</a>
     </div>
 {% endfor %}
