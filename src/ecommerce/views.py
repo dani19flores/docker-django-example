@@ -1,5 +1,4 @@
 from django.contrib import messages
-
 from django import template
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
@@ -7,6 +6,32 @@ from django.http import HttpResponse, HttpResponseRedirect
 
 from .forms import ProductModelForm
 from .models import ProductModel
+
+# Delete your views here.
+@login_required
+def product_model_delete_view(request,product_id):
+    instance = get_object_or_404(ProductModel, id=product_id)
+    if request.method == "POST":
+        instance.delete()
+        messages.success(request, "Producto eliminado con exito")
+        return HttpResponseRedirect("/ecommerce/")
+    context = {"product": instance}
+    template = "ecommerce/delete-view.html"
+    return render(request, template, context)
+
+# Update your views here.
+@login_required
+def product_model_Update_view(request, product_id):
+    instance = get_object_or_404(ProductModel, id=product_id)
+    form = ProductModelForm(request.POST or None, instance=instance)
+    if form.is_valid():
+        instance = form.save(commit=False)
+        instance.save()
+        messages.success(request, "Producto creado con exito")
+        return HttpResponseRedirect("/ecommerce/{product_id}/".format(product_id=instance.id))
+    context = {"form": form}
+    template = "ecommerce/update-view.html"
+    return render(request, template, context)
 
 # Create your views here.
 @login_required
