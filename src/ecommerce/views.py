@@ -3,9 +3,12 @@ from django import template
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseRedirect
+from django.db.models import Q
 
 from .forms import ProductModelForm
 from .models import ProductModel
+
+
 
 # Delete your views here.
 @login_required
@@ -55,7 +58,10 @@ def product_model_detail_view(request,product_id):
 
 @login_required
 def product_model_list_view(request):
+    query = request.GET.get("q", None)
     queryset = ProductModel.objects.all()
+    if query is not None:
+        queryset = queryset.filter(Q(title__icontains=query) | Q(price__icontains=query))
     template= "ecommerce/list-view.html"
     context = {"products": queryset}
 
