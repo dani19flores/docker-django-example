@@ -10,6 +10,6 @@
     <div class="product">
         <h2>{{ product.title }}</h2>
         <p>Precio: ${{ product.price }}</p>
-        <a href="{% url 'detail' product.id %}">Ver Detalles</a>
+        <a href="{% url 'ecommerce:detail' product_id=product.id %}">Ver Detalles</a>
     </div>
 {% endfor %}

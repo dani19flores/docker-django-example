@@ -61,7 +61,14 @@ def product_model_list_view(request):
     query = request.GET.get("q", None)
     queryset = ProductModel.objects.all()
     if query is not None:
-        queryset = queryset.filter(Q(title__icontains=query) | Q(price__icontains=query))
+        queryset = queryset.filter(
+            Q(title__icontains=query) | 
+            Q(price__icontains=query) |
+            Q(description__icontains=query) |
+            Q(seller__icontains=query) |
+            Q(color__icontains=query) |
+            Q(product_dimensions__icontains=query)
+        )
     template= "ecommerce/list-view.html"
     context = {"products": queryset}
 
