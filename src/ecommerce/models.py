@@ -1,8 +1,12 @@
+from django.conf import settings
 from django.db import models
 from django.db.models.signals import pre_save
 from django.utils.text import slugify
+
 from base.models import BasePublishedModel
 from .validators import validate_blocked_words
+
+User = settings.AUTH_USER_MODEL
 
 # Create your models here.
 class ProductModel(BasePublishedModel):
@@ -14,6 +18,7 @@ class ProductModel(BasePublishedModel):
     color = models.CharField(max_length=50, blank=True, null=True)
     product_dimensions = models.CharField(max_length=100, blank=True, null=True)
     slug = models.SlugField(db_index=True, blank=True, null=True)
+    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
 
     def get_absolute_url(self):
         return f"/products/{self.slug}/"
