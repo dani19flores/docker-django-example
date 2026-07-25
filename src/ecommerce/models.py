@@ -17,7 +17,7 @@ class ProductModel(BasePublishedModel):
     seller = models.CharField(max_length=100, blank=True, null=True)
     color = models.CharField(max_length=50, blank=True, null=True)
     product_dimensions = models.CharField(max_length=100, blank=True, null=True)
-    slug = models.SlugField(db_index=True, blank=True, null=True)
+    slug = models.SlugField(db_index=True, blank=True, null=True, unique=True)
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
 
     def get_absolute_url(self):

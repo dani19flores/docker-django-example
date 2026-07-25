@@ -5,7 +5,19 @@ from ecommerce.models import ProductModel
 # Create your models here.
 class Product(models.Model):
     title = models.CharField(max_length=120)
-    slug = models.SlugField()
+    slug = models.SlugField(unique=True)
+
+
+# --- modelo proxy vacío ---
+#
+# DigitalProduct no agrega campos ni métodos nuevos, solo demuestra que un
+# proxy puede existir sin cambiar NADA de comportamiento todavía — usa la
+# misma tabla y el mismo manager que Product. Sirve como punto de partida
+# para, más adelante, personalizarlo (otro manager, otros métodos, otro
+# Meta.ordering) sin tocar Product ni su tabla.
+class DigitalProduct(Product):
+    class Meta:
+        proxy = True
 
 
 # --- modelo proxy ---

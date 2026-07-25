@@ -18,4 +18,17 @@ urlpatterns = [
     path('list/', views.ProductAutoListView.as_view(), name="product-list"),
     path('list/<slug:slug>/', views.ProductAutoDetailView.as_view(), name="product-detail"),
     path('publicados/', views.product_proxy_list_view, name="published-products"),
+    path('digital-products/', views.DigitalProductListView.as_view(), name="digital-product-list"),
+
+    # RedirectView basada en la instancia del modelo Product (local, ver
+    # doc/mixin-instance-redirect-view.md): dos formas de llegar al mismo
+    # destino, /products/list/<slug>/.
+    path('id/<int:pk>/', views.ProductIDRedirectView.as_view(), name="product-id-redirect"),
+    path('slug-redirect/<slug:slug>/', views.ProductRedirectView.as_view(), name="product-slug-redirect"),
+
+    # estas dos van al final: <slug:slug>/ es un "catch-all" que matchea
+    # cualquier texto simple, así que tiene que evaluarse después de todas
+    # las rutas literales de arriba (si no, se las "come" a ellas).
+    path('<int:pk>/', views.ProductInstanceRedirectView.as_view(), name="instance-redirect"),
+    path('<slug:slug>/', views.ProductDetailView.as_view(), name="detail"),
 ]

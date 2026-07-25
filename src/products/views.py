@@ -1,10 +1,11 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import DetailView, ListView, RedirectView
+from django.views.generic.detail import SingleObjectMixin
 
 from ecommerce.models import ProductModel
-
-from .models import Product, ProductProxy
+from .mixins import TemplateTitleMixin
+from .models import DigitalProduct, Product, ProductProxy
 
 
 # --- RedirectView: manda al usuario a otra URL ---
@@ -70,14 +71,62 @@ product_detail_view_cbv = ProductDetailView.as_view()
 # justo los archivos que ya existen en templates/products/.
 
 
-class ProductAutoListView(ListView):
+class ProductAutoListView(TemplateTitleMixin, ListView):
     model = Product
+    title = "Listado de productos"
 
 
-class ProductAutoDetailView(DetailView):
+class ProductAutoDetailView(TemplateTitleMixin, DetailView):
     model = Product
     slug_field = "slug"
     slug_url_kwarg = "slug"
+    title = "Detalle de producto"
+
+
+# DigitalProduct es un proxy vacío de Product (misma tabla, sin cambios de
+# comportamiento todavía). Esta vista demuestra que un ListView puede apuntar
+# a un modelo proxy exactamente igual que a su modelo original — por ahora
+# lista los mismos registros que ProductAutoListView.
+class DigitalProductListView(TemplateTitleMixin, ListView):
+    model = DigitalProduct
+    template_name = "products/product_list.html"
+    context_object_name = "product_list"  # el template espera este nombre
+    title = "Listado de productos digitales"
+
+
+# --- RedirectView basada en la instancia del modelo ---
+#
+# No usan ningún mixin genérico de Django para buscar el objeto — leen el
+# parámetro directo de self.kwargs (lo que capturó la URL) y hacen el
+# get_object_or_404 a mano. Es más manual que SingleObjectMixin, pero más
+# fácil de leer para quien recién está aprendiendo qué hace un RedirectView.
+class ProductIDRedirectView(RedirectView):
+    def get_redirect_url(self, *args, **kwargs):
+        url_params = self.kwargs
+        pk = url_params.get("pk")
+        obj = get_object_or_404(Product, pk=pk)
+        slug = obj.slug
+        return f"/products/list/{slug}/"
+
+
+class ProductRedirectView(RedirectView):
+    def get_redirect_url(self, *args, **kwargs):
+        url_params = self.kwargs
+        slug = url_params.get("slug")
+        return f"/products/list/{slug}/"
+
+
+# La misma idea de arriba (ProductIDRedirectView), pero usando
+# SingleObjectMixin — el mixin GENÉRICO que trae Django para "buscar un
+# objeto" (lo usan por dentro DetailView/UpdateView/DeleteView). En vez de
+# leer self.kwargs a mano, self.get_object() ya sabe hacerlo por ti a partir
+# de `queryset` + el parámetro de la URL.
+class ProductInstanceRedirectView(SingleObjectMixin, RedirectView):
+    queryset = ProductModel.objects.all()
+
+    def get_redirect_url(self, *args, **kwargs):
+        obj = self.get_object()
+        return obj.get_absolute_url()
 
 
 # --- Modelo proxy + get_context_data ---
