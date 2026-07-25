@@ -4,6 +4,8 @@ from django.views.generic import DetailView, ListView, RedirectView
 
 from ecommerce.models import ProductModel
 
+from .models import Product
+
 
 # --- RedirectView: manda al usuario a otra URL ---
 
@@ -55,3 +57,24 @@ class ProductDetailView(DetailView):
 
 
 product_detail_view_cbv = ProductDetailView.as_view()
+
+
+# --- ListView/DetailView sin `template_name`: resolución automática ---
+#
+# Si no defines `template_name`, Django busca el template por convención:
+#   ListView   -> "<app_label>/<model_name>_list.html"
+#   DetailView -> "<app_label>/<model_name>_detail.html"
+#
+# Como el modelo es `Product` de la app `products`, busca
+# "products/product_list.html" y "products/product_detail.html" —
+# justo los archivos que ya existen en templates/products/.
+
+
+class ProductAutoListView(ListView):
+    model = Product
+
+
+class ProductAutoDetailView(DetailView):
+    model = Product
+    slug_field = "slug"
+    slug_url_kwarg = "slug"

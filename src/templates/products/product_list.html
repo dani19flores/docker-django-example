@@ -1,1 +1,9 @@
-vista de listado
+<h1>Listado de productos</h1>
+
+<ul>
+{% for product in product_list %}
+    <li><a href="{% url 'products:product-detail' slug=product.slug %}">{{ product.title }}</a></li>
+{% empty %}
+    <li>No hay productos todavía.</li>
+{% endfor %}
+</ul>
