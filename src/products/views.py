@@ -4,7 +4,7 @@ from django.views.generic import DetailView, ListView, RedirectView
 
 from ecommerce.models import ProductModel
 
-from .models import Product
+from .models import Product, ProductProxy
 
 
 # --- RedirectView: manda al usuario a otra URL ---
@@ -78,3 +78,27 @@ class ProductAutoDetailView(DetailView):
     model = Product
     slug_field = "slug"
     slug_url_kwarg = "slug"
+
+
+# --- Modelo proxy + get_context_data ---
+#
+# ProductProxy (definido en products/models.py) es un modelo PROXY de
+# ProductModel: comparte la misma tabla, pero su manager (`objects`) ya
+# viene filtrado para traer solo los productos con state="PUBLICADO".
+#
+# get_context_data() es el método que ListView/DetailView usan para armar
+# el diccionario de contexto que llega al template. Sobrescribirlo permite
+# agregar datos extra sin tener que escribir toda la vista desde cero.
+class ProductProxyListView(ListView):
+    model = ProductProxy
+    template_name = "products/product-proxy-list.html"
+    context_object_name = "products"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context["page_title"] = "Productos publicados"
+        context["total_published"] = self.get_queryset().count()
+        return context
+
+
+product_proxy_list_view = ProductProxyListView.as_view()

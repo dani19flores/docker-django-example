@@ -1,0 +1,11 @@
+<h1>{{ page_title }}</h1>
+
+<p>Total publicados: {{ total_published }}</p>
+
+<ul>
+{% for product in products %}
+    <li>{{ product.pretty_title }} — ${{ product.price }}</li>
+{% empty %}
+    <li>No hay productos publicados todavía.</li>
+{% endfor %}
+</ul>

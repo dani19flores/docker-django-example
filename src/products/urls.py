@@ -17,4 +17,5 @@ urlpatterns = [
     path('cbv/<slug:slug>/', views.product_detail_view_cbv),
     path('list/', views.ProductAutoListView.as_view(), name="product-list"),
     path('list/<slug:slug>/', views.ProductAutoDetailView.as_view(), name="product-detail"),
+    path('publicados/', views.product_proxy_list_view, name="published-products"),
 ]
