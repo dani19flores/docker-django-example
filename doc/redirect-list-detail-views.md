@@ -85,9 +85,64 @@ class ProductDetailView(DetailView):
 - Rutas: `/products/fbv/<slug>/` y `/products/cbv/<slug>/` — por ejemplo
   `/products/fbv/producto-1/` y `/products/cbv/producto-1/`.
 
+## ListView/DetailView sin `template_name` — resolución automática
+
+`templates/products/product_list.html` y `product_detail.html` existían como
+placeholders sin conectar a nada. Sus nombres no son casualidad: coinciden con
+la convención que usa Django para resolver el template **cuando no le das
+`template_name` explícito**:
+
+```
+ListView   -> "<app_label>/<model_name>_list.html"
+DetailView -> "<app_label>/<model_name>_detail.html"
+```
+
+Se conectaron usando el modelo `Product` propio de la app `products`
+(`title`, `slug` — se generó y aplicó su migración: `products/migrations/0001_initial.py`):
+
+```python
+class ProductAutoListView(ListView):
+    model = Product
+
+
+class ProductAutoDetailView(DetailView):
+    model = Product
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
+```
+
+Como el modelo es `Product` (app `products`), Django busca
+`products/product_list.html` y `products/product_detail.html` — exactamente
+los archivos que ya estaban ahí. No hace falta declarar `template_name` a mano.
+
+Los templates ahora sí tienen contenido y usan las urls con nombre (`app_name
+= "products"` en `products/urls.py`):
+
+```html
+<!-- product_list.html -->
+{% for product in product_list %}
+    <li><a href="{% url 'products:product-detail' slug=product.slug %}">{{ product.title }}</a></li>
+{% empty %}
+    <li>No hay productos todavía.</li>
+{% endfor %}
+```
+
+- `product_list`: nombre de contexto que `ListView` arma solo por default
+  cuando usas `model` en vez de `queryset` — es `<model_name>_list`. Por eso
+  el `{% for %}` puede iterar `product_list` sin que se haya declarado
+  `context_object_name` en ningún lado.
+- Igual con `DetailView`: sin `context_object_name`, el objeto llega al
+  template como `product` (nombre del modelo en minúscula).
+
+Rutas: `/products/list/` y `/products/list/<slug>/` (por ejemplo
+`/products/list/camisa-azul/`). Se sembraron 3 productos de prueba
+(`camisa-azul`, `pantalon-negro`, `tenis-blancos`) para poder probarlo.
+
 ## `products/urls.py` completo
 
 ```python
+app_name = "products"
+
 urlpatterns = [
     path('about/', TemplateView.as_view(template_name='about.html')),
     path('about-us/', RedirectView.as_view(url='/products/about/')),  # CBV inline
@@ -98,6 +153,8 @@ urlpatterns = [
     path('cbv/', views.product_list_view_cbv),
     path('fbv/<slug:slug>/', views.product_detail_view),
     path('cbv/<slug:slug>/', views.product_detail_view_cbv),
+    path('list/', views.ProductAutoListView.as_view(), name="product-list"),
+    path('list/<slug:slug>/', views.ProductAutoDetailView.as_view(), name="product-detail"),
 ]
 ```
 
@@ -106,18 +163,16 @@ urlpatterns = [
 | Vista genérica | Qué reemplaza | Atributos clave |
 |---|---|---|
 | `RedirectView` | Un `return HttpResponseRedirect(...)` | `url` |
-| `ListView` | Un `render` con un queryset completo | `queryset`/`model`, `template_name`, `context_object_name` |
-| `DetailView` | Un `get_object_or_404` + `render` | `queryset`/`model`, `slug_field`, `slug_url_kwarg`, `context_object_name` |
+| `ListView` | Un `render` con un queryset completo | `queryset`/`model`, `template_name` u.o. convención de nombre, `context_object_name` |
+| `DetailView` | Un `get_object_or_404` + `render` | `queryset`/`model`, `slug_field`, `slug_url_kwarg`, `context_object_name` u.o. convención de nombre |
 
-## Nota sobre `products/models.py`
+## Verificado en el navegador
 
-Se agregó un modelo `Product` propio (`title`, `slug`) en `products/models.py`,
-pero **todavía no tiene migración generada** y no se usó en ninguna de estas
-vistas — los ejemplos de arriba usan `ProductModel` de `ecommerce`, que ya
-tenía datos reales (los 500 productos de la actividad anterior) para poder
-probar las vistas en el navegador. Si más adelante se quiere migrar estas
-vistas para que usen el modelo `Product` propio de `products`, hay que correr
-`makemigrations`/`migrate` primero.
-
-Verificado en el navegador: las tres redirecciones, `/products/fbv/producto-1/`
-y `/products/cbv/producto-1/` funcionan y muestran el mismo producto.
+- Las tres redirecciones (`/products/about-us/`, `/products/about-us-fbv/`,
+  `/products/about-us-cbv/`) terminan en `/products/about/`.
+- `/products/fbv/producto-1/` y `/products/cbv/producto-1/` muestran el mismo
+  producto (modelo `ProductModel` de `ecommerce`, con `template_name`
+  explícito).
+- `/products/list/` y `/products/list/camisa-azul/` muestran el listado y el
+  detalle del modelo `Product` propio de `products`, usando la resolución
+  automática de templates (sin `template_name`).

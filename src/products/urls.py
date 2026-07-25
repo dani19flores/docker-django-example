@@ -3,6 +3,8 @@ from django.views.generic import RedirectView, TemplateView
 
 from products import views
 
+app_name = "products"
+
 urlpatterns = [
     path('about/', TemplateView.as_view(template_name='about.html')),
     path('about-us/', RedirectView.as_view(url='/products/about/')),  # CBV inline
@@ -13,4 +15,6 @@ urlpatterns = [
     path('cbv/', views.product_list_view_cbv),
     path('fbv/<slug:slug>/', views.product_detail_view),
     path('cbv/<slug:slug>/', views.product_detail_view_cbv),
+    path('list/', views.ProductAutoListView.as_view(), name="product-list"),
+    path('list/<slug:slug>/', views.ProductAutoDetailView.as_view(), name="product-detail"),
 ]
