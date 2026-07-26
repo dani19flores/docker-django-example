@@ -1,0 +1,9 @@
+<h1>Eliminar producto</h1>
+
+<p>¿Seguro que quieres eliminar "{{ object.title }}"? Esta acción no se puede deshacer.</p>
+
+<form method="POST">
+    {% csrf_token %}
+    <button type="submit">Sí, eliminar</button>
+    <a href="{% url 'products:product-detail' slug=object.slug %}">Cancelar</a>
+</form>

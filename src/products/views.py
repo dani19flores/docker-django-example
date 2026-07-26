@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
-from django.views.generic import CreateView, DetailView, ListView, RedirectView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, RedirectView, UpdateView
 from django.views.generic.detail import SingleObjectMixin
 
 from ecommerce.models import ProductModel
@@ -152,6 +152,42 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
 
 
 product_create_view_cbv = ProductCreateView.as_view()
+
+
+# --- ProductUpdateView / ProductDeleteView ---
+#
+# Las dos comparten el mismo problema de seguridad: sin filtrar por dueño,
+# cualquier usuario logueado podría editar o borrar el producto de otro con
+# solo adivinar/escribir el slug en la URL. get_queryset() es donde se
+# resuelve — UpdateView/DeleteView usan self.get_object(), que a su vez
+# busca DENTRO de self.get_queryset(). Si el producto no es del usuario
+# logueado, no aparece en ese queryset y Django responde 404 en vez de
+# dejar editar/borrar algo ajeno.
+class ProductUpdateView(LoginRequiredMixin, UpdateView):
+    form_class = ProductModelForm
+    template_name = "products/product_create.html"
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
+
+    def get_queryset(self):
+        return Product.objects.filter(user=self.request.user)
+
+    def get_success_url(self):
+        return reverse("products:product-detail", kwargs={"slug": self.object.slug})
+
+
+class ProductDeleteView(LoginRequiredMixin, DeleteView):
+    template_name = "products/FormsDelete.html"
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
+
+    def get_queryset(self):
+        return Product.objects.filter(user=self.request.user)
+
+    # Tras borrar, ya no hay slug al que volver (el objeto no existe más),
+    # así que se redirige a la lista en vez de al detalle.
+    def get_success_url(self):
+        return reverse("products:protected-product-list")
 
 
 # --- RedirectView basada en la instancia del modelo ---

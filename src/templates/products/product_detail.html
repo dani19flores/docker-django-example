@@ -1,4 +1,11 @@
 <h1>{{ title }}</h1>
 <h2>{{ product.title }}</h2>
 
+{% if request.user.is_authenticated and product.user_id == request.user.id %}
+    <p>
+        <a href="{% url 'products:product-update' slug=product.slug %}">Editar</a> |
+        <a href="{% url 'products:product-delete' slug=product.slug %}">Eliminar</a>
+    </p>
+{% endif %}
+
 <p><a href="{% url 'products:product-list' %}">&larr; Volver al listado</a></p>
