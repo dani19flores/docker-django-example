@@ -24,6 +24,7 @@ urlpatterns = [
     path('crear-cbv/', views.product_create_view_cbv, name="product-create-cbv"),
     path('editar/<slug:slug>/', views.ProductUpdateView.as_view(), name="product-update"),
     path('eliminar/<slug:slug>/', views.ProductDeleteView.as_view(), name="product-delete"),
+    path('my-products/', views.ProtectedListView.as_view(), name="my-products"),
 
     # RedirectView basada en la instancia del modelo Product (local, ver
     # doc/mixin-instance-redirect-view.md): dos formas de llegar al mismo

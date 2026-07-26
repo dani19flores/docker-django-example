@@ -118,6 +118,16 @@ class ProductProtectedListView(LoginRequiredMixin, TemplateTitleMixin, ListView)
         return Product.objects.filter(user=self.request.user)
 
 
+# --- Actividad: ListView basado en clases protegido por login ---
+class ProtectedListView(LoginRequiredMixin, ListView):
+    template_name = "products/product_list.html"
+    context_object_name = "product_list"
+
+    def get_queryset(self):
+        request = self.request
+        return Product.objects.filter(user=request.user)
+
+
 # --- ProductModelForm: crear un producto ---
 
 # FBV
