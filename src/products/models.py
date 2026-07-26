@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 from ecommerce.models import ProductModel
@@ -6,6 +7,7 @@ from ecommerce.models import ProductModel
 class Product(models.Model):
     title = models.CharField(max_length=120)
     slug = models.SlugField(unique=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
 
 
 # --- modelo proxy vacío ---

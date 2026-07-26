@@ -1,9 +1,13 @@
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
-from django.views.generic import DetailView, ListView, RedirectView
+from django.urls import reverse
+from django.views.generic import CreateView, DetailView, ListView, RedirectView
 from django.views.generic.detail import SingleObjectMixin
 
 from ecommerce.models import ProductModel
+from .forms import ProductModelForm
 from .mixins import TemplateTitleMixin
 from .models import DigitalProduct, Product, ProductProxy
 
@@ -92,6 +96,62 @@ class DigitalProductListView(TemplateTitleMixin, ListView):
     template_name = "products/product_list.html"
     context_object_name = "product_list"  # el template espera este nombre
     title = "Listado de productos digitales"
+
+
+# --- LoginRequiredMixin: protege una vista completa detrás de login ---
+#
+# Cualquier CBV que herede de LoginRequiredMixin ejecuta su propio dispatch()
+# ANTES que el de la vista real: revisa si request.user está autenticado, y
+# si no lo está, redirige a LOGIN_URL (configurado en settings.py como
+# "/admin/login/") con "?next=<la-url-que-pediste>" para volver acá después
+# de iniciar sesión. La vista ni siquiera llega a ejecutar get_queryset().
+class ProductProtectedListView(LoginRequiredMixin, TemplateTitleMixin, ListView):
+    model = Product
+    template_name = "products/product_list.html"
+    context_object_name = "product_list"
+    title = "Mis productos"
+
+    # Solo los productos del usuario logueado — self.request.user ya existe
+    # acá porque LoginRequiredMixin garantiza que dispatch() no llega hasta
+    # este punto si no hay sesión iniciada.
+    def get_queryset(self):
+        return Product.objects.filter(user=self.request.user)
+
+
+# --- ProductModelForm: crear un producto ---
+
+# FBV
+@login_required
+def product_create_view(request):
+    form = ProductModelForm(request.POST or None)
+    if form.is_valid():
+        instance = form.save(commit=False)
+        instance.user = request.user
+        instance.save()
+        return HttpResponseRedirect(
+            reverse("products:product-detail", kwargs={"slug": instance.slug})
+        )
+    context = {"form": form}
+    return render(request, "products/product_create.html", context)
+
+
+# CBV
+class ProductCreateView(LoginRequiredMixin, CreateView):
+    form_class = ProductModelForm
+    template_name = "products/product_create.html"
+
+    # form_valid() es lo que CreateView llama cuando el form pasó sus
+    # validaciones y ya está por guardar — acá se aprovecha para asignar el
+    # dueño antes de guardar, igual que hace la FBV con instance.user.
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("products:product-detail", kwargs={"slug": self.object.slug})
+
+
+product_create_view_cbv = ProductCreateView.as_view()
 
 
 # --- RedirectView basada en la instancia del modelo ---

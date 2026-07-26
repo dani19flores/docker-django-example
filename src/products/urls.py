@@ -19,6 +19,9 @@ urlpatterns = [
     path('list/<slug:slug>/', views.ProductAutoDetailView.as_view(), name="product-detail"),
     path('publicados/', views.product_proxy_list_view, name="published-products"),
     path('digital-products/', views.DigitalProductListView.as_view(), name="digital-product-list"),
+    path('protegido/', views.ProductProtectedListView.as_view(), name="protected-product-list"),
+    path('crear/', views.product_create_view, name="product-create"),
+    path('crear-cbv/', views.product_create_view_cbv, name="product-create-cbv"),
 
     # RedirectView basada en la instancia del modelo Product (local, ver
     # doc/mixin-instance-redirect-view.md): dos formas de llegar al mismo
